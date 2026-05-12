@@ -35,10 +35,10 @@ Se você está baixando o projeto pela primeira vez:
 
 ```bash
 # Clonar o repositório
-git clone https://github.com/seu-usuario/manducabank.git
+git clone https://github.com/Luckeera/ManducaBank
 
 # Entrar no diretório do projeto
-cd manducabank
+cd ManducaBank
 
 # Baixar as dependências do Flutter
 flutter pub get
@@ -53,14 +53,14 @@ Sempre trabalhe em branches para manter o código principal estável:
 git pull origin main
 
 # Criar uma nova branch para sua tarefa
-git checkout -b feature/nome-da-sua-feature
+git checkout -b feature/nome-da-sua-task
 
 # Após desenvolver, adicione e commite
 git add .
 git commit -m "feat: descrição da melhoria"
 
 # Enviar sua branch para o servidor
-git push origin feature/nome-da-sua-feature
+git push origin feature/nome-da-sua-task
 ```
 
 ---
