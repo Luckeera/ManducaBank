@@ -98,6 +98,26 @@ flutter run
 
 ---
 
+## 📅 Cronograma de Execução (Fases)
+
+Para evitar bloqueios na equipe, as tarefas devem seguir esta ordem lógica:
+
+### Fase 1: Fundação (Início Imediato)
+*   **Prioridade 0:** **Integrante 1** finaliza o `ApiService` e `DatabaseHelper`. Os outros precisam desses dados para as telas.
+*   **Identidade:** **Integrante 2** define as cores e o tema base para que o app tenha uma cara única desde o começo.
+
+### Fase 2: Construção e Conexão
+*   **Desenvolvimento de Telas:** **Integrante 2** (Login/Principal) e **Integrante 3** (Cotação/Transferência) constroem a interface.
+*   **Lógica de Dados:** **Integrante 3** conecta os serviços criados pelo Integrante 1 às suas telas.
+*   **Plugins:** **Integrante 4** desenvolve os módulos de Câmera e Autenticação de forma isolada.
+
+### Fase 3: Refino e Entrega
+*   **Integração Nativa:** **Integrante 4** insere os plugins nas telas já prontas.
+*   **Revisão Final:** **Integrante 5** valida a navegação entre todas as rotas e corrige bugs de última hora.
+*   **Geração do APK:** **Integrante 5** gera o build final e organiza o pacote para envio.
+
+---
+
 ## 👥 Equipe e Responsabilidades
 
 ### 🧑‍💻 Integrante 1: Lógica e Estrutura (Espinha Dorsal)

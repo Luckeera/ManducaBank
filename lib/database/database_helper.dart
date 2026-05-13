@@ -32,7 +32,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         valor REAL,
         destinatario TEXT,
-        data TEXT
+        data TEXT,
+        tipo TEXT
       )
     ''');
   }
@@ -47,5 +48,17 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getTransferencias() async {
     Database db = await database;
     return await db.query('transferencias', orderBy: 'id DESC');
+  }
+
+  // Método para deletar uma transferência específica
+  Future<int> deleteTransferencia(int id) async {
+    Database db = await database;
+    return await db.delete('transferencias', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Método para limpar todo o histórico
+  Future<int> clearHistorico() async {
+    Database db = await database;
+    return await db.delete('transferencias');
   }
 }
