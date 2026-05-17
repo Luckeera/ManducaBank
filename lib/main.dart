@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'routes/app_routes.dart';
+import 'theme/app_theme.dart';
+import 'views/login_screen.dart';
+import 'views/principal_screen.dart';
+import 'views/cotacao_screen.dart';
+import 'views/transferencia_screen.dart';
 
 void main() {
   runApp(const ManducaBankApp());
@@ -11,16 +15,16 @@ class ManducaBankApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ManducaBank',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
-      // Rota inicial do aplicativo
-      initialRoute: AppRoutes.login,
-      // Configuração das rotas nomeadas
-      routes: AppRoutes.routes,
+      title: 'ManducaBank',
+      theme: AppTheme.darkTheme,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginScreen(),
+        '/principal': (context) => const PrincipalScreen(),
+        '/cotacao': (context) => const CotacaoScreen(),
+        '/transferencia': (context) => const TransferenciaScreen(),
+      },
     );
   }
 }

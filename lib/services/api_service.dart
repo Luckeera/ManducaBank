@@ -4,7 +4,8 @@ import '../models/moeda_model.dart';
 
 class ApiService {
   // Endpoint da AwesomeAPI para cotações em tempo real
-  static const String _baseUrl = 'https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,BTC-BRL';
+  static const String _baseUrl =
+      'https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,BTC-BRL';
 
   // Função para buscar as cotações
   Future<List<MoedaModel>> fetchCotacoes() async {
@@ -13,11 +14,12 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        
+
         // A API retorna um objeto onde cada chave é o par de moedas (ex: USDBRL)
         return data.values.map((json) => MoedaModel.fromJson(json)).toList();
       } else {
-        throw Exception('Falha ao carregar cotações: Status ${response.statusCode}');
+        throw Exception(
+            'Falha ao carregar cotações: Status ${response.statusCode}');
       }
     } catch (e) {
       // Tratamento básico de erro

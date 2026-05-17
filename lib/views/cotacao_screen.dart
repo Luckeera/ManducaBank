@@ -16,32 +16,109 @@ class _CotacaoScreenState extends State<CotacaoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cotações em Tempo Real'),
+        title: const Text(
+          'Cotações',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: FutureBuilder<List<MoedaModel>>(
         future: _apiService.fetchCotacoes(),
         builder: (context, snapshot) {
+          // LOADING
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Exibindo progresso enquanto carrega
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            // Tratamento de erro na interface
-            return Center(child: Text('Erro: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Nenhuma cotação disponível.'));
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
-          // Lista de moedas carregada
-          final moedas = snapshot.data!;
+          // ERRO
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Erro: ${snapshot.error}',
+              ),
+            );
+          }
+
+          // DADOS
+          final moedas = snapshot.data ?? [];
+
           return ListView.builder(
+            padding: const EdgeInsets.all(20),
             itemCount: moedas.length,
             itemBuilder: (context, index) {
               final moeda = moedas[index];
-              return ListTile(
-                title: Text('${moeda.name} (${moeda.code})'),
-                subtitle: Text('Compra: R\$ ${moeda.bid.toStringAsFixed(2)}'),
-                trailing: Text('${moeda.pctChange}%', 
-                  style: TextStyle(color: moeda.pctChange >= 0 ? Colors.green : Colors.red),
+
+              final bool alta = moeda.pctChange >= 0;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 18),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E1E),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: alta
+                              ? Colors.green.withOpacity(0.2)
+                              : Colors.red.withOpacity(0.2),
+                          child: Icon(
+                            alta ? Icons.trending_up : Icons.trending_down,
+                            color: alta ? Colors.green : Colors.red,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              moeda.code,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'R\$ ${moeda.bid.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: alta
+                            ? Colors.green.withOpacity(0.15)
+                            : Colors.red.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${moeda.pctChange}%',
+                        style: TextStyle(
+                          color: alta ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               );
             },

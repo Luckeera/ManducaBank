@@ -13,9 +13,9 @@ class AppRoutes {
 
   // Mapa de rotas para o MaterialApp
   static Map<String, WidgetBuilder> get routes => {
-    login: (context) => const LoginScreen(),
-    principal: (context) => const PrincipalScreen(),
-    cotacao: (context) => const CotacaoScreen(),
-    transferencia: (context) => const TransferenciaScreen(),
-  };
+        login: (context) => const LoginScreen(),
+        principal: (context) => const PrincipalScreen(),
+        cotacao: (context) => const CotacaoScreen(),
+        transferencia: (context) => const TransferenciaScreen(),
+      };
 }
