@@ -1,6 +1,6 @@
 # ManducaBank - Flutter Application
 
-Este é o projeto base do **ManducaBank**, um aplicativo de banco digital desenvolvido em Flutter. O projeto segue princípios de Clean Code e uma arquitetura modularizada para facilitar a manutenção e escalabilidade.
+Este é o projeto base do **ManducaBank**, um aplicativo de banco digital desenvolvido em Flutter. O projeto segue princípios de Clean Code e uma arquitetura modularizada para facilitar a manutenção.
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -46,21 +46,18 @@ flutter pub get
 
 ### 3. Fluxo de Desenvolvimento Diário
 
-Sempre trabalhe em branches para manter o código principal estável:
+Sempre mantenha o código principal estável:
 
 ```bash
 # Atualizar seu código local
 git pull origin main
 
-# Criar uma nova branch para sua tarefa
-git checkout -b feature/nome-da-sua-task
-
 # Após desenvolver, adicione e commite
 git add .
 git commit -m "feat: descrição da melhoria"
 
-# Enviar sua branch para o servidor
-git push origin feature/nome-da-sua-task
+# Enviar suas alterações para o servidor
+git push origin main
 ```
 
 ---
