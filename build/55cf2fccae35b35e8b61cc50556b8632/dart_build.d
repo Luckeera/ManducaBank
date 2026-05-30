@@ -1,0 +1,1 @@
+ C:\\flutter_projetos\\ManducaBank\\build\\55cf2fccae35b35e8b61cc50556b8632\\dart_build_result.json: 
