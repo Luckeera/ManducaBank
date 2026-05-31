@@ -50,7 +50,6 @@ class _CotacaoScreenState extends State<CotacaoScreen> {
             itemCount: moedas.length,
             itemBuilder: (context, index) {
               final moeda = moedas[index];
-
               final bool alta = moeda.pctChange >= 0;
 
               return Container(
@@ -110,7 +109,7 @@ class _CotacaoScreenState extends State<CotacaoScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '${moeda.pctChange}%',
+                        '${alta ? "+" : ""}${moeda.pctChange.toStringAsFixed(2)}%',
                         style: TextStyle(
                           color: alta ? Colors.green : Colors.red,
                           fontWeight: FontWeight.bold,

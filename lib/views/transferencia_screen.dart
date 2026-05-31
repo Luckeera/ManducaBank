@@ -1,28 +1,71 @@
 import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_input.dart';
 
-class TransferenciaScreen extends StatelessWidget {
-  const TransferenciaScreen({
-    super.key,
-  });
+class TransferenciaScreen extends StatefulWidget {
+  const TransferenciaScreen({super.key});
+
+  @override
+  State<TransferenciaScreen> createState() => _TransferenciaScreenState();
+}
+
+class _TransferenciaScreenState extends State<TransferenciaScreen> {
+  final valorController = TextEditingController();
+  final descricaoController = TextEditingController();
+  final DatabaseHelper db = DatabaseHelper();
+
+  Future<void> salvarTransferencia(String destinatario) async {
+    final valor = double.tryParse(
+      valorController.text.replaceAll(',', '.'),
+    );
+
+    if (valor == null || valor <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Digite um valor válido'),
+        ),
+      );
+      return;
+    }
+
+    final String descricao = descricaoController.text.trim().isEmpty 
+        ? 'Transferência Pix' 
+        : descricaoController.text;
+    final String dataAtual = DateTime.now().toString().substring(0, 19);
+
+    // Dados que serão salvos no banco
+    final Map<String, dynamic> dadosTransacao = {
+      'valor': valor,
+      'destinatario': destinatario,
+      'data': dataAtual,
+      'tipo': descricao,
+    };
+
+    // Insere no banco SQLite através do DatabaseHelper do Integrante 1
+    await db.insertTransferencia(dadosTransacao);
+
+    if (!mounted) return;
+
+    // Redireciona substituindo a tela atual para o Comprovante (Mapeado pelo Integrante 4)
+    Navigator.pushReplacementNamed(
+      context,
+      '/comprovante',
+      arguments: dadosTransacao,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final String idUsuario = args?['idUsuario'] ?? 'Usuário';
-
     final double valorInicial = args?['valorInicial'] ?? 0.0;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Transferência',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: SafeArea(
@@ -32,7 +75,6 @@ class TransferenciaScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // CARD DESTINATÁRIO
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -43,12 +85,8 @@ class TransferenciaScreen extends StatelessWidget {
                     children: [
                       const CircleAvatar(
                         radius: 32,
-                        backgroundColor: Color.fromARGB(255, 230, 24, 93),
-                        child: Icon(
-                          Icons.person,
-                          size: 32,
-                          color: Colors.white,
-                        ),
+                        backgroundColor: Color.fromARGB(255, 255, 62, 126),
+                        child: Icon(Icons.person, size: 32, color: Colors.white),
                       ),
                       const SizedBox(width: 18),
                       Column(
@@ -56,9 +94,7 @@ class TransferenciaScreen extends StatelessWidget {
                         children: [
                           const Text(
                             'Destinatário',
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
+                            style: TextStyle(color: Colors.grey),
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -73,44 +109,29 @@ class TransferenciaScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 35),
-
                 const Text(
                   'Valor da transferência',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 20),
-
-                const CustomInput(
+                CustomInput(
                   hint: 'R\$ 0,00',
                   icon: Icons.attach_money,
+                  controller: valorController,
                 ),
-
                 const SizedBox(height: 25),
-
                 const Text(
                   'Descrição',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 20),
-
-                const CustomInput(
+                CustomInput(
                   hint: 'Ex: pagamento, presente...',
                   icon: Icons.description,
+                  controller: descricaoController,
                 ),
-
                 const SizedBox(height: 35),
-
-                // RESUMO
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -139,45 +160,17 @@ class TransferenciaScreen extends StatelessWidget {
                           Text('Taxa'),
                           Text(
                             'Grátis',
-                            style: TextStyle(
-                              color: Colors.green,
-                            ),
+                            style: TextStyle(color: Colors.green),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
                 CustomButton(
                   text: 'Confirmar Transferência',
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text(
-                            'Transferência enviada',
-                          ),
-                          content: const Text(
-                            'Sua transferência foi realizada com sucesso.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-
-                                Navigator.pop(context);
-                              },
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onPressed: () => salvarTransferencia(idUsuario),
                 ),
               ],
             ),

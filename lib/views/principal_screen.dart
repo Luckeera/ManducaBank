@@ -7,7 +7,9 @@ class PrincipalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String nomeUsuario = 'Cliente';
+    // 🛠️ MODIFICADO: Captura o nome enviado pela login_screen através dos argumentos de rota
+    final Object? args = ModalRoute.of(context)?.settings.arguments;
+    final String nomeUsuario = args is String ? args : 'Cliente';
 
     return Scaffold(
       appBar: AppBar(
@@ -41,6 +43,33 @@ class PrincipalScreen extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/cotacao');
+              break;
+            case 2:
+              Navigator.pushNamed(
+                context,
+                '/transferencia',
+                arguments: {
+                  'idUsuario': '12345',
+                  'valorInicial': 100.0,
+                },
+              );
+              break;
+            case 3:
+              Navigator.pushNamed(
+                context,
+                '/perfil',
+                arguments:
+                    nomeUsuario, // 👈 ADICIONADO: Passa o nome para a tela de perfil
+              );
+              break;
+          }
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -68,7 +97,7 @@ class PrincipalScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Olá, $nomeUsuario 👋',
+                  'Olá, $nomeUsuario 👋', // 👈 AJUSTADO: Agora mostra o nome dinâmico
                   style: const TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -93,73 +122,77 @@ class PrincipalScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
-                  height: 490,
-                  child: GridView.count(
-                    physics: const NeverScrollableScrollPhysics(),
-                    childAspectRatio: 1,
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    children: [
-                      ActionCard(
-                        icon: Icons.attach_money,
-                        title: 'Cotações',
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/cotacao',
-                          );
-                        },
-                      ),
-                      ActionCard(
-                        icon: Icons.send,
-                        title: 'Transferência',
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/transferencia',
-                            arguments: {
-                              'idUsuario': '12345',
-                              'valorInicial': 100.0,
-                            },
-                          );
-                        },
-                      ),
-                      ActionCard(
-                        icon: Icons.qr_code_scanner,
-                        title: 'QR Code',
-                        onTap: () {
-                          Navigator.pushNamed(
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 1,
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  children: [
+                    ActionCard(
+                      icon: Icons.attach_money,
+                      title: 'Cotações',
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/cotacao',
+                        );
+                      },
+                    ),
+                    ActionCard(
+                      icon: Icons.send,
+                      title: 'Transferência',
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/transferencia',
+                          arguments: {
+                            'idUsuario': '12345',
+                            'valorInicial': 100.0,
+                          },
+                        );
+                      },
+                    ),
+                    ActionCard(
+                      icon: Icons.qr_code_scanner,
+                      title: 'QR Code',
+                      onTap: () {
+                        Navigator.pushNamed(
                           context,
                           '/qr',
-                         );
-                        },
-                      ),
-                       ActionCard(
-                        icon: Icons.receipt_long,
-                        title: 'Comprovantes',
-                        onTap: () {
-                          Navigator.pushNamed(
+                        );
+                      },
+                    ),
+                    ActionCard(
+                      icon: Icons.receipt_long,
+                      title: 'Comprovantes',
+                      onTap: () {
+                        Navigator.pushNamed(
                           context,
                           '/comprovante',
-                          );
-                         },
-                      ),                     
-                      ActionCard(
-                        icon: Icons.credit_card,
-                        title: 'Cartões',
-                        onTap: () {},
-                      ),
-                      ActionCard(
-                        icon: Icons.pie_chart,
-                        title: 'Investimentos',
-                        onTap: () {},
-                      ),
-                    ],
-                  ),
+                        );
+                      },
+                    ),
+                    ActionCard(
+                      icon: Icons.credit_card,
+                      title: 'Cartões',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/construcao',
+                            arguments: 'Cartões');
+                      },
+                    ),
+                    ActionCard(
+                      icon: Icons.pie_chart,
+                      title: 'Investimentos',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/construcao',
+                            arguments: 'Investimentos');
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 30),
                 const Text(
                   'Últimas movimentações',
                   style: TextStyle(
