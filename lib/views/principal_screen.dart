@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/action_card.dart';
+import '../database/database_helper.dart';
 
 class PrincipalScreen extends StatelessWidget {
   const PrincipalScreen({super.key});
@@ -10,6 +11,7 @@ class PrincipalScreen extends StatelessWidget {
     // 🛠️ MODIFICADO: Captura o nome enviado pela login_screen através dos argumentos de rota
     final Object? args = ModalRoute.of(context)?.settings.arguments;
     final String nomeUsuario = args is String ? args : 'Cliente';
+    final DatabaseHelper db = DatabaseHelper();
 
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +45,7 @@ class PrincipalScreen extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) {
+        onTap: (index) async {
           switch (index) {
             case 0:
               break;
@@ -51,14 +53,15 @@ class PrincipalScreen extends StatelessWidget {
               Navigator.pushNamed(context, '/cotacao');
               break;
             case 2:
-              Navigator.pushNamed(
+              await Navigator.pushNamed(
                 context,
                 '/transferencia',
                 arguments: {
                   'idUsuario': '12345',
-                  'valorInicial': 100.0,
                 },
               );
+              // Força a atualização da Home ao voltar da transferência
+              (context as Element).markNeedsBuild();
               break;
             case 3:
               Navigator.pushNamed(
@@ -143,15 +146,16 @@ class PrincipalScreen extends StatelessWidget {
                     ActionCard(
                       icon: Icons.send,
                       title: 'Transferência',
-                      onTap: () {
-                        Navigator.pushNamed(
+                      onTap: () async {
+                        await Navigator.pushNamed(
                           context,
                           '/transferencia',
                           arguments: {
                             'idUsuario': '12345',
-                            'valorInicial': 100.0,
                           },
                         );
+                        // Força a atualização da Home ao voltar da transferência pelo Grid também
+                        (context as Element).markNeedsBuild();
                       },
                     ),
                     ActionCard(
@@ -170,7 +174,7 @@ class PrincipalScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.pushNamed(
                           context,
-                          '/comprovante',
+                          '/historico', // 🛠️ AJUSTADO: Agora vai para o histórico
                         );
                       },
                     ),
@@ -201,23 +205,43 @@ class PrincipalScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildTransaction(
-                  icon: Icons.shopping_cart,
-                  title: 'Mercado',
-                  value: '- R\$ 120,00',
-                  color: Colors.red,
-                ),
-                _buildTransaction(
-                  icon: Icons.pix,
-                  title: 'Pix Recebido',
-                  value: '+ R\$ 850,00',
-                  color: Colors.green,
-                ),
-                _buildTransaction(
-                  icon: Icons.movie,
-                  title: 'Netflix',
-                  value: '- R\$ 39,90',
-                  color: Colors.red,
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: db.getTransferencias(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Text(
+                          'Nenhuma movimentação recente.',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      );
+                    }
+
+                    final transactions = snapshot.data!.take(3).toList();
+
+                    return Column(
+                      children: transactions.map((trans) {
+                        return _buildTransaction(
+                          icon: Icons.send,
+                          title: trans['destinatario'] ?? 'Transferência',
+                          value: '- R\$ ${trans['valor'].toStringAsFixed(2)}',
+                          color: Colors.redAccent,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/comprovante',
+                              arguments: trans,
+                            );
+                          },
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
               ],
             ),
@@ -232,54 +256,58 @@ class PrincipalScreen extends StatelessWidget {
     required String title,
     required String value,
     required Color color,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    title,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 16,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      icon,
                       color: Colors.white,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      title,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
+            const SizedBox(width: 12),
+            Text(
+              value,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

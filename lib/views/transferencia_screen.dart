@@ -14,6 +14,20 @@ class _TransferenciaScreenState extends State<TransferenciaScreen> {
   final valorController = TextEditingController();
   final descricaoController = TextEditingController();
   final DatabaseHelper db = DatabaseHelper();
+  double saldoAtual = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarSaldo();
+  }
+
+  Future<void> _carregarSaldo() async {
+    final s = await db.getSaldo();
+    setState(() {
+      saldoAtual = s;
+    });
+  }
 
   Future<void> salvarTransferencia(String destinatario) async {
     final valor = double.tryParse(
@@ -22,8 +36,16 @@ class _TransferenciaScreenState extends State<TransferenciaScreen> {
 
     if (valor == null || valor <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Digite um valor válido')),
+      );
+      return;
+    }
+
+    if (valor > saldoAtual) {
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Digite um valor válido'),
+          content: Text('Saldo insuficiente para esta operação!'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -42,24 +64,29 @@ class _TransferenciaScreenState extends State<TransferenciaScreen> {
       'tipo': descricao,
     };
 
-    // Insere no banco SQLite através do DatabaseHelper do Integrante 1
-    await db.insertTransferencia(dadosTransacao);
+    // 1. Insere no banco SQLite (com tratamento de erro para não travar no Windows)
+    try {
+      await db.insertTransferencia(dadosTransacao).timeout(const Duration(seconds: 1));
+      await db.updateSaldo(saldoAtual - valor).timeout(const Duration(seconds: 1));
+    } catch (e) {
+      print("ERRO AO SALVAR NO BANCO: $e. Prosseguindo em memória...");
+      // Fallback: se o banco falhar, atualizamos apenas a variável local para o comprovante
+      db.updateSaldo(saldoAtual - valor); // Isso atualiza a variável estática de memória
+    }
 
     if (!mounted) return;
 
-    // Redireciona substituindo a tela atual para o Comprovante (Mapeado pelo Integrante 4)
+    // Redireciona substituindo a tela atual para o Comprovante
     Navigator.pushReplacementNamed(
       context,
       '/comprovante',
       arguments: dadosTransacao,
     );
-  }
-
+    }
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final String idUsuario = args?['idUsuario'] ?? 'Usuário';
-    final double valorInicial = args?['valorInicial'] ?? 0.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -145,7 +172,7 @@ class _TransferenciaScreenState extends State<TransferenciaScreen> {
                         children: [
                           const Text('Saldo disponível'),
                           Text(
-                            'R\$ ${valorInicial.toStringAsFixed(2)}',
+                            'R\$ ${saldoAtual.toStringAsFixed(2).replaceAll('.', ',')}',
                             style: const TextStyle(
                               color: Colors.green,
                               fontWeight: FontWeight.bold,
